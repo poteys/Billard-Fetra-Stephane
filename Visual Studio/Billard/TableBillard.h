@@ -12,5 +12,8 @@ public:
 	TableBillard();
 	TableBillard(Point trouTable);
 	void draw(SDL_Renderer* renderer, Color color, SDL_Event& event);
+
+	Point getPositionTrou();
+
 };
 

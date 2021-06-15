@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < 4; i++) {
 		trouBillard[0] = new TableBillard(Point(28, 28));
 		trouBillard[1] = new TableBillard(Point(28, HEIGHT - 28));
-		trouBillard[2] = new TableBillard(Point(WIDTH, - 28));
-		trouBillard[3] = new TableBillard(Point(WIDTH, HEIGHT));
+		trouBillard[2] = new TableBillard(Point(WIDTH - 20, 28));
+		trouBillard[3] = new TableBillard(Point(WIDTH - 20, HEIGHT - 28));
 	}
 
 	//LesBoules

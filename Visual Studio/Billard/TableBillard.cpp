@@ -15,3 +15,8 @@ void TableBillard::draw(SDL_Renderer* renderer, Color color, SDL_Event& event)
 	this->trouTable.update(event);
 	trouTable.drawCircle(renderer, 20, color, true);
 }
+
+Point TableBillard::getPositionTrou()
+{
+	return this->trouTable;
+}
