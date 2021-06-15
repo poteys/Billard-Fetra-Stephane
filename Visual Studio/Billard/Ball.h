@@ -1,6 +1,7 @@
 #pragma once
 #include "../lib_Point/Point.h"
 #include "Queue.h"
+#include "TableBillard.h"
 
 class Ball
 {
@@ -14,6 +15,8 @@ private:
 	Vector friction; //Friction de la table probablement
 
 	bool ballIsMoving;
+
+	TableBillard trouBillard;
 
 
 	__time64_t lastUpdate;	//	date in nanoseconds since last update
@@ -40,16 +43,16 @@ public:
 	void setSpeed(Vector queueSpeed);
 	Vector getSpeed();
 
-	
+
 	Vector& computeFriction();
 
 
 	bool isHitBy(Queue queue);
 	bool isHitBy(Ball* ball);
 
-	
+
 	void checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color);
-	
+
 
 	void visualizeVectorSpeed(SDL_Renderer* renderer);
 	void visualizePath(Queue& queue, SDL_Renderer* renderer);
@@ -57,6 +60,6 @@ public:
 
 	void draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue queue, Vector queueSpeed);
 
-	
+
 };
 

@@ -133,11 +133,13 @@
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="BillardSource.cpp" />
     <ClCompile Include="Queue.cpp" />
+    <ClCompile Include="TableBillard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="BillardSource.h" />
     <ClInclude Include="Queue.h" />
+    <ClInclude Include="TableBillard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

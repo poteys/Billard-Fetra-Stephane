@@ -1,4 +1,5 @@
 #include "Ball.h"
+#include "TableBillard.h"
 #include <time.h>
 #include <iostream>
 
@@ -72,9 +73,9 @@ void Ball::listenForHit(Ball* ball, Vector ballSpeed)
 		//Vector v2primVec(v2prim * sin(45 * M_PI / 180), v2prim * cos(45 * M_PI / 180));
 
 		this->setSpeed(ball->speed);
-		ball->setSpeed(this->speed/2);
+		ball->setSpeed(this->speed / 2);
 
-		
+
 	}
 }
 
@@ -132,10 +133,10 @@ bool Ball::isHitBy(Ball* ball)
 void Ball::visualizePath(Queue& queue, SDL_Renderer* renderer)
 {
 	SDL_SetRenderDrawColor(renderer, 70, 100, 255, SDL_ALPHA_OPAQUE);
-	SDL_RenderDrawLine(renderer, this->center.x, 
-								 this->center.y, 
-		this->center.x + cos( (180 + queue.getTurn()) * M_PI / 180) * 250,
-		this->center.y - sin( (180 + queue.getTurn()) * M_PI / 180) *250);
+	SDL_RenderDrawLine(renderer, this->center.x,
+		this->center.y,
+		this->center.x + cos((180 + queue.getTurn()) * M_PI / 180) * 250,
+		this->center.y - sin((180 + queue.getTurn()) * M_PI / 180) * 250);
 }
 
 void Ball::checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color)
