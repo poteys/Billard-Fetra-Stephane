@@ -167,6 +167,8 @@ int main(int argc, char** argv) {
 		trouBillard[4]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
 		trouBillard[5]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
 
+
+
 		showRenderingBuffer(renderer);
 		endOfGame = keypressed(event, '\033');
 		//SDL_KeyCode;
