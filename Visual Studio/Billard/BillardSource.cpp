@@ -99,12 +99,14 @@ int main(int argc, char** argv) {
 	//La queue
 	Color queueColor(150, 75, 0, SDL_ALPHA_OPAQUE);
 	Queue queue(0.5, -90, Point(WIDTH / 2, HEIGHT - 20, true), Point(WIDTH / 2, HEIGHT - 20.0), WIDTH, HEIGHT);
-	TableBillard* trouBillard[4];
-	for (int i = 0; i < 4; i++) {
+	TableBillard* trouBillard[6];
+	for (int i = 0; i < 6; i++) {
 		trouBillard[0] = new TableBillard(Point(28, 28));
 		trouBillard[1] = new TableBillard(Point(28, HEIGHT - 28));
 		trouBillard[2] = new TableBillard(Point(WIDTH - 20, 28));
 		trouBillard[3] = new TableBillard(Point(WIDTH - 20, HEIGHT - 28));
+		trouBillard[4] = new TableBillard(Point(WIDTH / 2, HEIGHT - 28));
+		trouBillard[5] = new TableBillard(Point(WIDTH / 2, 28));
 	}
 
 	//LesBoules
@@ -162,6 +164,8 @@ int main(int argc, char** argv) {
 		trouBillard[1]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
 		trouBillard[2]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
 		trouBillard[3]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
+		trouBillard[4]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
+		trouBillard[5]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
 
 		showRenderingBuffer(renderer);
 		endOfGame = keypressed(event, '\033');
