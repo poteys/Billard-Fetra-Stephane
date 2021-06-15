@@ -31,6 +31,7 @@ public:
 
 	Point& getCenter();
 
+	void setSize(double newSize);
 
 	void listenForHit(Queue queue, Vector queueSpeed);
 	void listenForHit(Ball* ball, Vector ballSpeed);
@@ -49,7 +50,7 @@ public:
 
 	bool isHitBy(Queue queue);
 	bool isHitBy(Ball* ball);
-	bool Touch(TableBillard* trouBillard);
+	bool touch(TableBillard* trouBillard);
 
 
 	void checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color);

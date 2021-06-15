@@ -58,6 +58,11 @@ Point& Ball::getCenter()
 	return this->center;
 }
 
+void Ball::setSize(double newSize)
+{
+	this->radius = newSize;
+}
+
 void Ball::listenForHit(Queue queue, Vector queueSpeed)
 {
 	if (this->isHitBy(queue)) {
@@ -130,12 +135,19 @@ bool Ball::isHitBy(Ball* ball)
 	return distance <= 2 * this->radius;
 }
 
-bool Ball::Touch(TableBillard* trouBillard)
+
+
+
+
+bool Ball::touch(TableBillard* trouBillard)
 {
 	double distance = sqrt((trouBillard->getPositionTrou().x - this->center.x) * (trouBillard->getPositionTrou().x - this->center.x)
 		+ (trouBillard->getPositionTrou().y - this->center.y) * (trouBillard->getPositionTrou().y - this->center.y));
 	return distance <= trouBillard->getRayon();
 }
+
+
+
 
 void Ball::visualizePath(Queue& queue, SDL_Renderer* renderer)
 {

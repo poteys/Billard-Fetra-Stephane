@@ -13,7 +13,7 @@ TableBillard::TableBillard(Point trouTable) : trouTable(trouTable), rayon(0), he
 
 void TableBillard::draw(SDL_Renderer* renderer, Color color, SDL_Event& event)
 {
-	this->trouTable.update(event);
+	//this->trouTable.update(event);
 	this->rayon = 20;
 	trouTable.drawCircle(renderer, this->rayon, color, true);
 }
