@@ -49,6 +49,7 @@ public:
 
 	bool isHitBy(Queue queue);
 	bool isHitBy(Ball* ball);
+	bool Touch(TableBillard* trouBillard);
 
 
 	void checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color);
