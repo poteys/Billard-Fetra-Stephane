@@ -1,11 +1,11 @@
 #include "TableBillard.h"
 
-//TableBillard::TableBillard()
-//{
-//	this->height = 0;
-//	this->width = 0;
-//	this->rayon = 0;
-//}
+TableBillard::TableBillard()
+{
+	this->height = 0;
+	this->width = 0;
+	this->rayon = 0;
+}
 
 TableBillard::TableBillard(Point trouTable) : trouTable(trouTable), rayon(0), height(0), width(0)
 {
