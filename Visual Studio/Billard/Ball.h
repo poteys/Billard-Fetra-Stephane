@@ -1,7 +1,7 @@
 #pragma once
 #include "../lib_Point/Point.h"
 #include "Queue.h"
-#include "TableBillard.h"
+#include "Table.h"
 
 class Ball
 {
@@ -16,7 +16,7 @@ private:
 
 	bool ballIsMoving;
 
-	TableBillard trouBillard;
+	Table trouBillard;
 
 
 	__time64_t lastUpdate;	//	date in nanoseconds since last update
@@ -24,17 +24,21 @@ private:
 
 	int width, height;
 
+
+	double distance(Point ballCenter, Point holeCenter);
+	double findNearestHoleDistance(Table& table);
+	
+
 public:
 	Ball(double mass, Point center, double radius, int width, int height);
 	void update(SDL_Event& event, Queue queue, Vector queueSpeed);
-
 
 	Point& getCenter();
 
 	void setSize(double newSize);
 
-	void listenForHit(Queue queue, Vector queueSpeed);
-	void listenForHit(Ball* ball, Vector ballSpeed);
+	void listenForQueueHit(Queue queue, Vector queueSpeed);
+	void listenForBallCollision(Ball* ball, Vector ballSpeed);
 
 
 	void setPropulsion(Vector newPropulsion);
@@ -50,8 +54,9 @@ public:
 
 	bool isHitBy(Queue queue);
 	bool isHitBy(Ball* ball);
-	bool touch(TableBillard* trouBillard);
 
+
+	bool fallInside(Table table);
 
 	void checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color);
 

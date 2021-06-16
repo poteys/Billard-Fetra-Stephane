@@ -1,25 +1,23 @@
 #include <iostream>
+#include <time.h>
 using namespace std;
 
 #include <SDL.h>
 #include "Queue.h"
+#include "Ball.h"
+#include "BillardSource.h"
+#include "Table.h"
 
-constexpr auto MAX_OBJECTS = 10;
-
-//	****************  //
-//	window attributs  //
-//	****************  //
-//	- position and size on screen
 constexpr auto POS_X = 500, POS_Y = 200;
 constexpr auto WIDTH = 400, HEIGHT = 800;
-constexpr auto MAX_BALL = 14;
+constexpr auto QUEUE_MASS = 0.5;
+constexpr auto QUEUE_INITIAL_ANGLE = -90;
+constexpr auto BALL_MASS = 0.5;
+constexpr auto BALL_RADIUS = 15;
 
 
 //	include desired header files for libraries
-#include <time.h>
-#include "Ball.h"
-#include "BillardSource.h"
-#include "TableBillard.h"
+
 
 SDL_Renderer* init_SDL(const char* title) {
 #pragma region SDL initialization
@@ -75,129 +73,104 @@ double sqrDistance(Point a, Point b) {
 	return sqrDistance;
 }
 
-
-//int findNearestBallIndex(Ball* ball[], Queue& queue)
-//{
-//	double minDistance = sqrDistance(ball[0]->getCenter(), queue.getQueueTip());
-//	int minIndex = 1;
-//	for (int i = 0; i < 2; i++) {
-//		double ballToTestDistance = sqrDistance(ball[i]->getCenter(), queue.getQueueTip());
-//
-//		if (ballToTestDistance < minDistance) {
-//			minDistance = ballToTestDistance;
-//			minIndex = i;
-//		}
-//	}
-//	return minIndex;
-//}
-
-void displayTrou(TableBillard* trouBillard[6])
+void displayBalls(int nombreLigne, int numberOfBalls, Ball* balls[], SDL_Renderer* renderer, const Color& ballColor2, SDL_Event& event, Queue& queue)
 {
-	for (int i = 0; i < 6; i++) {
-		trouBillard[0] = new TableBillard(Point(28, 28));
-		trouBillard[1] = new TableBillard(Point(28, HEIGHT - 28));
-		trouBillard[2] = new TableBillard(Point(WIDTH - 20, 28));
-		trouBillard[3] = new TableBillard(Point(WIDTH - 20, HEIGHT - 28));
-		trouBillard[4] = new TableBillard(Point(28, HEIGHT/2 ));
-		trouBillard[5] = new TableBillard(Point(WIDTH-20, HEIGHT/2));
+	for (int j = 0; j < nombreLigne; j++) {
+		for (int i = 0; i < numberOfBalls; i++) {
+			balls[i]->draw(renderer, ballColor2, event, queue, queue.getPropulsion());
+		}
 	}
 }
 
-//	entry point of application
-int main(int argc, char** argv) {
-	SDL_Renderer* renderer = init_SDL("Billard game");	//	this object will draw in our window
-
-	/*	prepare useful objects here	*/
-	//La queue
-	Color queueColor(150, 75, 0, SDL_ALPHA_OPAQUE);
-	Queue queue(0.5, -90, Point(WIDTH / 2, HEIGHT - 20, true), Point(WIDTH / 2, HEIGHT - 20.0), WIDTH, HEIGHT);
-
-	TableBillard* trousBillard[6];
-	displayTrou(trousBillard);
-
-	//LesBoules
-	Color ballColor1(255, 255, 255, SDL_ALPHA_OPAQUE);
-	Color ballColor2(0, 0, 0, SDL_ALPHA_OPAQUE);
-	Ball* balls[15];
-	int numberOfBalls = 15;
-	int nombreLigne = 5;
-
+void visualizeBallPath(Ball* balls[], Queue& queue, int numberOfBalls, SDL_Renderer* renderer)
+{
+	double minDistance = sqrDistance(balls[0]->getCenter(), queue.getQueueTip());
+	int minIndex = 0;
 	for (int i = 0; i < numberOfBalls; i++) {
-		balls[i] = new Ball(0.5, Point(WIDTH /2, HEIGHT / 10 + 30 * i), 15, WIDTH, HEIGHT);
+		double ballToTestDistance = sqrDistance(balls[i]->getCenter(), queue.getQueueTip());
+		if (ballToTestDistance < minDistance) {
+			minDistance = ballToTestDistance;
+			minIndex = i;
+		}
 	}
 
-	long time = clock();
+	balls[minIndex]->visualizePath(queue, renderer);
+}
+
+void displayQueue(Queue& queue, SDL_Renderer* renderer, const Color& queueColor, SDL_Event& event)
+{
+	queue.draw(renderer, queueColor, event);
+}
+
+void removeBallInsideHole(int& numberOfBalls, Ball* balls[], const Table& table)
+{
+	for (int j = 0; j < numberOfBalls; j++) {
+		for (int i = 0; i < 6; i++) {
+			if (balls[j]->fallInside(table)) {
+				delete balls[j];
+				balls[j] = balls[numberOfBalls - 1];
+				numberOfBalls--;
+			}
+		}
+	}
+	if (numberOfBalls == 0) {
+		quit_SDL();
+	}
+}
+
+void displayTable(Table& table, SDL_Renderer* renderer)
+{
+	table.draw(renderer);
+}
+
+void listenForBallCollision(int numberOfBalls, Ball* balls[])
+{
+	for (int i = 1; i < numberOfBalls; i++) {
+		balls[0]->listenForBallCollision(balls[i], balls[i]->getSpeed());
+	}
+}
 
 
+int main(int argc, char** argv) {
+	SDL_Renderer* renderer = init_SDL("Billard game");	
 
-	//	*********  //
-	//	main loop  //
-	//	*********  //
+
+	Color queueColor(150, 75, 0, SDL_ALPHA_OPAQUE);
+	Point tipPosition(WIDTH / 2, HEIGHT - 200.0);
+	Point handlePosition(WIDTH / 2, HEIGHT - 20.0);
+	Queue queue(QUEUE_MASS, QUEUE_INITIAL_ANGLE, tipPosition, handlePosition, WIDTH, HEIGHT);
+
+
+	Table table(WIDTH, HEIGHT);
+
+
+	Color ballColor1(255, 255, 255, SDL_ALPHA_OPAQUE);
+	Color ballColor2(0, 0, 0, SDL_ALPHA_OPAQUE);
+	int numberOfBalls = 15;
+	int numberOfRows = 5;
+	Ball* balls[15];
+	for (int i = 0; i < numberOfBalls; i++) {
+		balls[i] = new Ball(BALL_MASS, Point(WIDTH /2, HEIGHT / 10.0 + 30.0 * i), BALL_RADIUS, WIDTH, HEIGHT);
+	}
+
+
 	bool endOfGame = false;
 	while (!endOfGame) {
-		//	******************************  //
-		//	draw image in rendering buffer  //
-		//	******************************  //
+
 		clearWindow(renderer);
-
-		/*	draw any desired graphical objects here	*/
-
-		//	****************  //
-		//	event management  //
-		//	****************  //
 		SDL_Event event = getNextEvent();
 
-		queue.draw(renderer, queueColor, event);
-		for (int j = 0; j < nombreLigne; j++) {
-			for (int i = 0; i < numberOfBalls; i++) {
-				balls[i]->draw(renderer, ballColor2, event, queue, queue.getPropulsion());
-			}
-		}
+		displayTable(table, renderer);
+		displayBalls(numberOfRows, numberOfBalls, balls, renderer, ballColor2, event, queue);
+		displayQueue(queue, renderer, queueColor, event);
 
-		//For balls self collide
-		/*for (Ball* ball : ball) {
-			ball->listenForHit(ball, ball->getSpeed());
-		}*/
-		//ball[0]->listenForHit(ball[1], ball[1]->getSpeed());
-		//ball[1]->listenForHit(ball[0], ball[0]->getSpeed());
-
-
-		double minDistance = sqrDistance(balls[0]->getCenter(), queue.getQueueTip());
-		int minIndex = 0;
-		for (int i = 0; i < numberOfBalls; i++) {
-			double ballToTestDistance = sqrDistance(balls[i]->getCenter(), queue.getQueueTip());
-			if (ballToTestDistance < minDistance) {
-				minDistance = ballToTestDistance;
-				minIndex = i;
-			}
-		}
-
-		balls[minIndex]->visualizePath(queue, renderer);
-
-		//trou billard
-		for (int i = 0; i < 6; i++) {
-			trousBillard[i]->draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), event);
-
-		}
-
-
-		for (int j = 0; j < numberOfBalls; j++) {
-			for (int i = 0; i < 6; i++) {
-				if (balls[j]->touch(trousBillard[i])) {
-					delete balls[j];
-					balls[j] = balls[numberOfBalls - 1];
-					numberOfBalls--;
-				}
-			}
-		}
-
+		visualizeBallPath(balls, queue, numberOfBalls, renderer);
+		listenForBallCollision(numberOfBalls, balls);
+		removeBallInsideHole(numberOfBalls, balls, table);
 
 		showRenderingBuffer(renderer);
 		endOfGame = keypressed(event, '\033');
-		//SDL_KeyCode;
 	}
-
-	time = clock() - time;
 
 	quit_SDL();
 

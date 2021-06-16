@@ -1,7 +1,8 @@
 #include "Ball.h"
-#include "TableBillard.h"
+#include "Table.h"
 #include <time.h>
 #include <iostream>
+
 
 Ball::Ball(double mass, Point center, double radius, int width, int height)
 	: center(center), speed(0, 0), acceleration(0, 0), propulsion(0, 0), friction(0, 0)
@@ -42,35 +43,52 @@ void Ball::update(SDL_Event& event, Queue queue, Vector queueSpeed)
 	this->acceleration.x = sum.x / mass;
 	this->acceleration.y = sum.y / mass;
 
-	/*double distance = sqrt((queue.getQueueTip().x - this->center.x)
-		* (queue.getQueueTip().x - this->center.x) +
-		(queue.getQueueTip().y - this->center.y)
-		* (queue.getQueueTip().y - this->center.y));
-
-	std::cout << distance << std::endl;*/
-
-	listenForHit(queue, queueSpeed);
-
+	listenForQueueHit(queue, queueSpeed);
 }
+
+double Ball::findNearestHoleDistance(Table& table)
+{
+	double holeDistance = distance(table.getHolesPosition()[0], this->getCenter());
+	double minDistance = holeDistance;
+
+	for (int i = 1; i < 6; i++) {
+		holeDistance = distance(table.getHolesPosition()[i], this->getCenter());
+		if (holeDistance < minDistance) {
+			minDistance = holeDistance;
+		}
+	}
+	return minDistance;
+}
+
+
+double Ball::distance(Point ballCenter, Point holeCenter)
+{
+	double distance = sqrt ((ballCenter.x - holeCenter.x) * (ballCenter.x - holeCenter.x) +
+					  (ballCenter.y - holeCenter.y) * (ballCenter.y - holeCenter.y));
+	return distance;
+}
+
 
 Point& Ball::getCenter()
 {
 	return this->center;
 }
 
+
 void Ball::setSize(double newSize)
 {
 	this->radius = newSize;
 }
 
-void Ball::listenForHit(Queue queue, Vector queueSpeed)
+
+void Ball::listenForQueueHit(Queue queue, Vector queueSpeed)
 {
 	if (this->isHitBy(queue)) {
 		this->setSpeed(queueSpeed); //Transfer speed to the ball
 	}
 }
 
-void Ball::listenForHit(Ball* ball, Vector ballSpeed)
+void Ball::listenForBallCollision(Ball* ball, Vector ballSpeed)
 {
 	if (this->isHitBy(ball)) {
 		//Vitesses après collision v1prim = v2prim et v2prim = v1
@@ -84,6 +102,7 @@ void Ball::listenForHit(Ball* ball, Vector ballSpeed)
 	}
 }
 
+
 void Ball::setPropulsion(Vector newPropulsion)
 {
 	this->propulsion = newPropulsion;
@@ -94,10 +113,12 @@ Vector& Ball::getPropulsion()
 	return this->propulsion;
 }
 
+
 void Ball::setSpeed(Vector queueSpeed)
 {
 	this->speed = queueSpeed;
 }
+
 
 Vector Ball::getSpeed()
 {
@@ -136,17 +157,11 @@ bool Ball::isHitBy(Ball* ball)
 }
 
 
-
-
-
-bool Ball::touch(TableBillard* trouBillard)
+bool Ball::fallInside(Table table)
 {
-	double distance = sqrt((trouBillard->getPositionTrou().x - this->center.x) * (trouBillard->getPositionTrou().x - this->center.x)
-		+ (trouBillard->getPositionTrou().y - this->center.y) * (trouBillard->getPositionTrou().y - this->center.y));
-	return distance <= trouBillard->getRayon();
+	double nearestHoleDistance = findNearestHoleDistance(table);
+	return nearestHoleDistance <= table.getHoleRadius();
 }
-
-
 
 
 void Ball::visualizePath(Queue& queue, SDL_Renderer* renderer)
@@ -157,6 +172,7 @@ void Ball::visualizePath(Queue& queue, SDL_Renderer* renderer)
 		this->center.x + cos((180 + queue.getTurn()) * M_PI / 180) * 250,
 		this->center.y - sin((180 + queue.getTurn()) * M_PI / 180) * 250);
 }
+
 
 void Ball::checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color)
 {
@@ -174,11 +190,13 @@ void Ball::checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color)
 	this->center.drawCircle(renderer, this->radius, color, true);
 }
 
+
 void Ball::visualizeVectorSpeed(SDL_Renderer* renderer)
 {
 	SDL_RenderDrawLine(renderer, this->center.x, this->center.y,
 		-this->speed.x + this->center.x, -this->speed.y + this->center.y);
 }
+
 
 void Ball::draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue queue, Vector queueSpeed)
 {
@@ -186,6 +204,7 @@ void Ball::draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue que
 	checkBordersAndDrawBall(renderer, color);
 	visualizeVectorSpeed(renderer);
 }
+
 
 __time64_t Ball::getTimeInNanoSeconds()
 {
@@ -197,3 +216,4 @@ __time64_t Ball::getTimeInNanoSeconds()
 	return ts.tv_sec * 1000000000 + ts.tv_nsec;
 	//Nombre de nanosec écoulé depuis le 1er janvier 70
 }
+
