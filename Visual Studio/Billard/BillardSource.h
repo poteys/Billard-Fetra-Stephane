@@ -8,6 +8,8 @@ void displayQueue(Queue& queue, SDL_Renderer* renderer, const Color& queueColor,
 
 void displayTable(Table& table, SDL_Renderer* renderer);
 
+void displayBalls(int numberOfBalls, Ball* balls[15], SDL_Renderer* renderer, const Color& ballColor2, SDL_Event& event, Queue& queue);
+
 void listenForBallCollision(int numberOfBalls, Ball* balls[15]);
 
 void removeBallInsideHole(int& numberOfBalls, Ball* balls[15], const Table& table);

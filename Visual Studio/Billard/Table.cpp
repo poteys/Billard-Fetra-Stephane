@@ -11,26 +11,26 @@ Table::Table(int width, int height)
 {
 	this->width = width;
 	this->height = height;
-	this->radius = 20;
+	this->radius = 15;
 }
 
 
 void Table::displayHoles(SDL_Renderer* renderer)
 {
 	//Position holes
-	holes[0] = Point(28, 28);	//Top left
-	holes[1] = Point(this->width - 28, 28); //Top right
+	holes[0] = Point(5, 5);	//Top left
+	holes[1] = Point(this->width - 5, 5); //Top right
 
-	holes[2] = Point(28, this->height - 28); //Bottom left
-	holes[3] = Point(this->width - 28, this->height - 28); //Bottom right
+	holes[2] = Point(5, this->height - 5); //Bottom left
+	holes[3] = Point(this->width - 5, this->height - 5); //Bottom right
 
-	holes[4] = Point(28, this->height / 2); //Middle left
-	holes[5] = Point(this->width - 28, this->height / 2); //Middle right
+	holes[4] = Point(2, this->height / 2); //Middle left
+	holes[5] = Point(this->width - 2, this->height / 2); //Middle right
 	
 	//Draw holes
 	for (int i = 0; i < 6; i++) {
-		this->holes[i].draw(renderer, Color(255, 0, 255, SDL_ALPHA_OPAQUE), 0);
-		this->holes[i].drawCircle(renderer, this->radius, Color(255, 0, 255, SDL_ALPHA_OPAQUE), true);
+		this->holes[i].draw(renderer, Color(0, 0, 0, SDL_ALPHA_OPAQUE), 0);
+		this->holes[i].drawCircle(renderer, this->radius, Color(0, 0, 0, SDL_ALPHA_OPAQUE), true);
 	}
 }
 
