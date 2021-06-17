@@ -4,8 +4,7 @@
 #include <iostream>
 
 
-
-Ball::Ball(double mass, Point center, int radius, int width, int height)
+Ball::Ball(double mass, Point center, double radius, int width, int height)
 	: center(center), speed(0, 0), acceleration(0, 0), propulsion(0, 0), friction(0, 0)
 {
 	this->mass = mass;
@@ -16,7 +15,7 @@ Ball::Ball(double mass, Point center, int radius, int width, int height)
 	this->lastUpdate = this->getTimeInNanoSeconds();
 }
 
-void Ball::update(SDL_Event& event, Queue* queue[], Vector queueSpeed)
+void Ball::update(SDL_Event& event, Queue queue, Vector queueSpeed)
 {
 	__time64_t currentUpdate = this->getTimeInNanoSeconds();
 
@@ -47,17 +46,6 @@ void Ball::update(SDL_Event& event, Queue* queue[], Vector queueSpeed)
 	listenForQueueHit(queue, queueSpeed);
 }
 
-void Ball::setType(string ballType)
-{
-	this->type = ballType;
-}
-
-string Ball::getType()
-{
-	return this->type;
-}
-
-
 double Ball::findNearestHoleDistance(Table& table)
 {
 	double holeDistance = distance(table.getHolesPosition()[0], this->getCenter());
@@ -72,20 +60,11 @@ double Ball::findNearestHoleDistance(Table& table)
 	return minDistance;
 }
 
-int Ball::sign(double a)
-{
-	if (a < 0) {
-		return -1;
-	}
-	else
-		return 1;
-}
-
 
 double Ball::distance(Point ballCenter, Point holeCenter)
 {
-	double distance = sqrt((ballCenter.x - holeCenter.x) * (ballCenter.x - holeCenter.x) +
-		(ballCenter.y - holeCenter.y) * (ballCenter.y - holeCenter.y));
+	double distance = sqrt ((ballCenter.x - holeCenter.x) * (ballCenter.x - holeCenter.x) +
+					  (ballCenter.y - holeCenter.y) * (ballCenter.y - holeCenter.y));
 	return distance;
 }
 
@@ -96,73 +75,31 @@ Point& Ball::getCenter()
 }
 
 
-void Ball::setSize(int newSize)
+void Ball::setSize(double newSize)
 {
 	this->radius = newSize;
 }
 
 
-void Ball::listenForQueueHit(Queue* queue[], Vector& queueSpeed)
+void Ball::listenForQueueHit(Queue queue, Vector queueSpeed)
 {
-	int index = -1;
-	if (queue[0]->isStaticQueue() == true) {
-		index = 1;
-	}
-	if (queue[1]->isStaticQueue() == true) {
-		index = 0;
-	}
-
-	if (this->isHitBy(queue[index]) && this->speed.x < 2 && this->speed.y < 2) {
+	if (this->isHitBy(queue)) {
 		this->setSpeed(queueSpeed); //Transfer speed to the ball
 	}
 }
 
-void Ball::listenForBallCollision(Ball* ball, Vector& ballSpeed)
+void Ball::listenForBallCollision(Ball* ball, Vector ballSpeed)
 {
 	if (this->isHitBy(ball)) {
+		//Vitesses après collision v1prim = v2prim et v2prim = v1
+		//Vector v1primVec(v1prim * sin(45 * M_PI / 180), v2prim * cos(45 * M_PI / 180));
+		//Vector v2primVec(v2prim * sin(45 * M_PI / 180), v2prim * cos(45 * M_PI / 180));
 
-		//téta1 et téta2 sont égaux : 45degré
-		//v1 = v1prim + v2prim (masses égales)
+		this->setSpeed(ball->speed);
+		ball->setSpeed(this->speed / 2);
 
-		//Conservation de l'energie en X
-		// v1x		  + v2x		   = v1primX + v2primX
-		// ballSpeedX + thisSpeedX = 2 * v1primX  ou 2 *v2primX
-		//v1primX = (ballSpeedX + thisSpeedX) / 2   
-		//v2primX = (ballSpeedX + thisSpeedX) / 2 //sens contraire à v1primX
-
-
-		//Conservation de l'energie en Y
-		// v1y		  + v2y		   = v1primY + v2primY                 
-		// ballSpeedY + thisSpeedY = 2 * v1primY ou  2 *v2primY             =   2 * ballSpeed * cos45  = ballSpeed
-		//v1primY = (ballSpeedY + thisSpeedY) / 2		 si this au repos donc thisSpeedY = 0
-		//v2primY = (ballSpeedyY+ thisSpeedY) / 2 //même sens que v1primY
-
-
-		Vector v2prim(this->getSpeed().x - (ball->getSpeed().x + this->getSpeed().x) / 2,
-			this->getSpeed().y - (ball->getSpeed().y + this->getSpeed().y) / 2);
-
-
-		//Vector v2prim (this->getSpeed().x - sin(M_PI / 4) *	1/2 * ball->getSpeed().x,
-		//			   this->getSpeed().y - cos(M_PI / 4) *	1/2 * ball->getSpeed().y);
-		//		//v2primY = vitesse initiale Y -  cos (téta2) * 1/2 *  v1.x		
-
-		int signV2primX = sign(v2prim.x);
-		int signV2primY = sign(v2prim.y);
-
-		Vector v1prim(-signV2primX * ball->getSpeed().x - (ball->getSpeed().x + this->getSpeed().x) / 2,
-			signV2primY * ball->getSpeed().y - (ball->getSpeed().y + this->getSpeed().y) / 2);
-
-
-		////Le sens de v1prim en X s'oppose toujours au sens de v2prim en X 
-		//Vector v1prim( -signV2primX * ball->getSpeed().x - sin(M_PI / 4) * 1/2 * ball->getSpeed().x,
-		//			  signV2primY * ball->getSpeed().y - cos(M_PI / 4) * 1/2 * ball->getSpeed().y);
-
-
-		this->setSpeed(v2prim);
-		ball->setSpeed(v1prim);
 
 	}
-
 }
 
 
@@ -182,54 +119,30 @@ void Ball::setSpeed(Vector queueSpeed)
 	this->speed = queueSpeed;
 }
 
-void Ball::setSpeedX(Vector speed)
-{
-	this->speed.x = speed.x;
-}
 
-void Ball::setSpeedY(Vector speed)
-{
-	this->speed.y = speed.y;
-}
-
-
-Vector& Ball::getSpeed()
+Vector Ball::getSpeed()
 {
 	return this->speed;
-}
-
-void Ball::setAcceleration(Vector acceleration)
-{
-	this->acceleration = acceleration;
 }
 
 Vector& Ball::computeFriction()
 {
 	//The higher the constant, the quicker the ball will stop
-	this->friction.x = .2 * -this->getSpeed().x;
-	this->friction.y = .2 * -this->getSpeed().y;
+	this->friction.x = .25 * -this->getSpeed().x;
+	this->friction.y = .25 * -this->getSpeed().y;
 
 	return this->friction;
 }
 
-bool Ball::isHitBy(Queue* queue)
+bool Ball::isHitBy(Queue queue)
 {
-	int index = 0;
-
-	//if (queue[0]->isStaticQueue() == true) {
-	//	index = 1;
-	//}
-	//if (queue[1]->isStaticQueue() == true) {
-	//	index = 0;
-	//}
-
-	double distance = sqrt((queue->getQueueTip().x - this->center.x)
-		* (queue->getQueueTip().x - this->center.x) +
-		(queue->getQueueTip().y - this->center.y)
-		* (queue->getQueueTip().y - this->center.y));
+	double distance = sqrt((queue.getQueueTip().x - this->center.x)
+		* (queue.getQueueTip().x - this->center.x) +
+		(queue.getQueueTip().y - this->center.y)
+		* (queue.getQueueTip().y - this->center.y));
 
 	//std::cout << distance << std::endl;
-	return distance <= this->radius + 1.0;
+	return distance <= this->radius;
 
 }
 
@@ -240,16 +153,7 @@ bool Ball::isHitBy(Ball* ball)
 		(ball->center.y - this->center.y)
 		* (ball->center.y - this->center.y));
 
-	return distance <= 2.0 * this->radius + 2;
-}
-
-
-Vector Ball::getVectorPerpendicularToBallSpeed()
-{
-	Point perp(this->center.x + cos(M_PI / 2 + this->speed.x * M_PI / 180) * 250,
-		this->center.y - sin(M_PI / 2 + this->speed.y * M_PI / 180) * 250);
-	Vector p(this->center, perp);
-	return p;
+	return distance <= 2 * this->radius;
 }
 
 
@@ -260,13 +164,13 @@ bool Ball::fallInside(Table table)
 }
 
 
-void Ball::visualizePath(Queue* queue, SDL_Renderer* renderer)
+void Ball::visualizePath(Queue& queue, SDL_Renderer* renderer)
 {
 	SDL_SetRenderDrawColor(renderer, 70, 100, 255, SDL_ALPHA_OPAQUE);
 	SDL_RenderDrawLine(renderer, this->center.x,
 		this->center.y,
-		this->center.x + cos((180 + queue->getTurn()) * M_PI / 180) * 250,
-		this->center.y - sin((180 + queue->getTurn()) * M_PI / 180) * 250);
+		this->center.x + cos((180 + queue.getTurn()) * M_PI / 180) * 250,
+		this->center.y - sin((180 + queue.getTurn()) * M_PI / 180) * 250);
 }
 
 
@@ -290,20 +194,15 @@ void Ball::checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color)
 void Ball::visualizeVectorSpeed(SDL_Renderer* renderer)
 {
 	SDL_RenderDrawLine(renderer, this->center.x, this->center.y,
-		this->speed.x + this->center.x, this->speed.y + this->center.y);
+		-this->speed.x + this->center.x, -this->speed.y + this->center.y);
 }
 
 
-void Ball::draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue* queue[], Vector queueSpeed)
+void Ball::draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue queue, Vector queueSpeed)
 {
 	this->update(event, queue, queueSpeed);
 	checkBordersAndDrawBall(renderer, color);
-	//visualizeVectorSpeed(renderer);
-
-	//SDL_RenderDrawLine(renderer, this->center.x,
-	//	this->center.y,
-	//	this->center.x + getVectorPerpendicularToBallSpeed().x ,
-	//	this->center.y - getVectorPerpendicularToBallSpeed().y);
+	visualizeVectorSpeed(renderer);
 }
 
 

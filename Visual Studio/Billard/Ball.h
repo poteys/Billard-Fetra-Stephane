@@ -2,17 +2,13 @@
 #include "../lib_Point/Point.h"
 #include "Queue.h"
 #include "Table.h"
-#include <string>
-using namespace std;
 
 class Ball
 {
 private:
-	string type;
-
 	double mass; //kg
 	Point center;
-	int radius; //pixel
+	double radius; //pixel
 	Vector speed;
 	Vector propulsion;
 	Vector acceleration;
@@ -32,21 +28,17 @@ private:
 	double distance(Point ballCenter, Point holeCenter);
 	double findNearestHoleDistance(Table& table);
 	
-	int sign(double a);
 
 public:
-	Ball(double mass, Point center, int radius, int width, int height);
-	void update(SDL_Event& event, Queue* queue[], Vector queueSpeed);
-
-	void setType(string ballType);
-	string getType();
+	Ball(double mass, Point center, double radius, int width, int height);
+	void update(SDL_Event& event, Queue queue, Vector queueSpeed);
 
 	Point& getCenter();
 
-	void setSize(int newSize);
+	void setSize(double newSize);
 
-	void listenForQueueHit(Queue* queue[], Vector& queueSpeed);
-	void listenForBallCollision(Ball* ball, Vector& ballSpeed);
+	void listenForQueueHit(Queue queue, Vector queueSpeed);
+	void listenForBallCollision(Ball* ball, Vector ballSpeed);
 
 
 	void setPropulsion(Vector newPropulsion);
@@ -54,19 +46,14 @@ public:
 
 
 	void setSpeed(Vector queueSpeed);
-	void setSpeedX(Vector speed);
-	void setSpeedY(Vector speed);
-	Vector& getSpeed();
+	Vector getSpeed();
 
-	void setAcceleration(Vector acceleration);
 
 	Vector& computeFriction();
 
 
-	bool isHitBy(Queue* queue);
+	bool isHitBy(Queue queue);
 	bool isHitBy(Ball* ball);
-
-	Vector getVectorPerpendicularToBallSpeed();
 
 
 	bool fallInside(Table table);
@@ -75,10 +62,10 @@ public:
 
 
 	void visualizeVectorSpeed(SDL_Renderer* renderer);
-	void visualizePath(Queue* queue, SDL_Renderer* renderer);
+	void visualizePath(Queue& queue, SDL_Renderer* renderer);
 
 
-	void draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue* queue[], Vector queueSpeed);
+	void draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue queue, Vector queueSpeed);
 
 
 };

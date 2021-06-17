@@ -22,7 +22,6 @@ private:
 
 	int width, height;	//	limit of box
 
-	bool isStatic;
 
 public:
 	//	constructor
@@ -43,20 +42,13 @@ public:
 	void setPropulsion(Vector newPropulsion);
 	Vector& getPropulsion();
 
-	Vector getAcceleration();
-
-	Vector& getQueueSpeed();
-
+	
 	Vector& computeFriction();
 
 	//void visualizeVectors(SDL_Renderer* renderer);
 	
 
 	void draw(SDL_Renderer* renderer, Color color, SDL_Event& event);
-
-	void makeStatic();
-	void makePlayable();
-	bool isStaticQueue();
 
 };
 
