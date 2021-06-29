@@ -112,7 +112,7 @@ void positionBalls(Ball* balls[], SDL_Renderer* renderer, const Color& ballColor
 				balls[index]->setType("rayée");
 			}
 			//Le noir au milieu au row = 3
-			if (index == NOIR) {
+			if (index == 4) {
 				balls[NOIR] = new Ball(BALL_MASS, Point(x + 0 * BALL_RADIUS, y), BALL_RADIUS, WIDTH, HEIGHT);
 				balls[index]->setType("noir");
 			}
@@ -170,7 +170,7 @@ void positionBalls(Ball* balls[], SDL_Renderer* renderer, const Color& ballColor
 }
 #pragma endregion
 
-void visualizeBallPath(Player* players[], Ball* balls[], Queue* queue[], int numberOfBalls, SDL_Renderer* renderer)
+int visualizeBallPath(Player* players[], Ball* balls[], Queue* queue[], int numberOfBalls, SDL_Renderer* renderer, bool& playersDontHaveSpecificBallType)
 {
 	int index = -1;
 	if (players[0]->isTurn() == true) {
@@ -191,15 +191,29 @@ void visualizeBallPath(Player* players[], Ball* balls[], Queue* queue[], int num
 
 	balls[minIndex]->visualizePath(queue[index], renderer);
 
+	if (playersDontHaveSpecificBallType) {
+		if (balls[minIndex]->wasHit && players[0]->isTurn()) {
+			cout << "Player 2 next" << endl;
+			players[1]->setTurn(true);
+			players[0]->setTurn(false);
+		}
+		else if (balls[minIndex]->wasHit && players[1]->isTurn()) {
+			cout << "Player 1 next" << endl;
+			players[1]->setTurn(false);
+			players[0]->setTurn(true);
+		}
+	}
+
+	return minIndex;
 }
 
-void displayQueue(Queue* queues[], SDL_Renderer* renderer, const Color& queueColor, SDL_Event& event)
+void displayQueue(Queue* queues[], SDL_Renderer* renderer, SDL_Event& event)
 {
-	queues[0]->draw(renderer, queueColor, event);
-	queues[1]->draw(renderer, queueColor, event);
+	queues[0]->draw(renderer, event);
+	queues[1]->draw(renderer, event);
 }
 
-void removeBallInsideHole(Player* players[], int& numberOfBalls, Ball* balls[], const Table& table)
+string getAndRemoveBallInsideHole(Player* players[], int& numberOfBalls, Ball* balls[], const Table& table, bool& playersDontHaveSpecificBallType, int& minIndex)
 {
 	int index = -1;
 	if (players[0]->isTurn() == true) {
@@ -209,22 +223,97 @@ void removeBallInsideHole(Player* players[], int& numberOfBalls, Ball* balls[], 
 		index = 1;
 	}
 
-	for (int j = 0; j < numberOfBalls; j++) {
-		/*for (int i = 0; i < 6; i++) {*/
-		if (balls[j]->fallInside(table)) {
-			delete balls[j];
-			balls[j] = balls[numberOfBalls - 1];
-			numberOfBalls--;
-			//players[index]->setPlayerBalls(balls[j]->getType()); //TO DO
+	string ballInsideHoleType = "";
 
-			players[1]->setTurn(true);
-			players[0]->setTurn(false); //TO DO
+	for (int j = 0; j < numberOfBalls; j++) {
+
+		if (balls[j]->fallInside(table)) {
+			ballInsideHoleType = balls[j]->getType(); //////
+			delete balls[j];
+			string ballToMoveType = balls[numberOfBalls - 1]->getType(); ////
+			balls[j] = balls[numberOfBalls - 1];
+			balls[j]->setType(ballToMoveType); /////
+			numberOfBalls--;
 		}
-		/*}*/
+
 	}
-	if (numberOfBalls == 0) {
-		quit_SDL();
+
+	//Decide players ball type
+	if (playersDontHaveSpecificBallType) {
+		if (ballInsideHoleType == "pleine" && players[0]->isTurn()) {
+			players[0]->setPlayerBalls("BLUE");
+			players[1]->setPlayerBalls("RED");
+			players[0]->getQueue()->setColor(Color (10, 100, 255, SDL_ALPHA_OPAQUE)); //Pleine
+			players[1]->getQueue()->setColor(Color (255, 0, 0, SDL_ALPHA_OPAQUE)); //Rayée
+
+
+			playersDontHaveSpecificBallType = false;
+		}
+		else if (ballInsideHoleType == "rayée" && players[0]->isTurn()) {
+			players[0]->setPlayerBalls("RED");
+			players[1]->setPlayerBalls("BLUE");
+			players[0]->getQueue()->setColor(Color (255, 0, 0, SDL_ALPHA_OPAQUE)); //Rayée
+			players[1]->getQueue()->setColor(Color (10, 100, 255, SDL_ALPHA_OPAQUE)); //Pleine
+
+			playersDontHaveSpecificBallType = false;
+		}
+		else if (ballInsideHoleType == "pleine" && players[1]->isTurn()) {
+			players[1]->setPlayerBalls("BLUE");
+			players[0]->setPlayerBalls("RED");
+			players[1]->getQueue()->setColor(Color(10, 100, 255, SDL_ALPHA_OPAQUE)); //Pleine
+			players[0]->getQueue()->setColor(Color(255, 0, 0, SDL_ALPHA_OPAQUE)); //Rayée
+
+			playersDontHaveSpecificBallType = false;
+		}
+		else if (ballInsideHoleType == "rayée" && players[1]->isTurn()) {
+			players[1]->setPlayerBalls("RED");
+			players[0]->setPlayerBalls("BLUE");
+			players[1]->getQueue()->setColor(Color(255, 0, 0, SDL_ALPHA_OPAQUE)); //Rayée
+			players[0]->getQueue()->setColor(Color(10, 100, 255, SDL_ALPHA_OPAQUE)); //Pleine
+
+			playersDontHaveSpecificBallType = false;
+		}
 	}
+
+	//Manage turns/fouls
+	else if (!playersDontHaveSpecificBallType) {
+		if (players[0]->isTurn() && ballInsideHoleType == players[0]->getPlayerBallsType()) {
+			players[0]->decrementTotalBall();
+			players[0]->setTurn(true);
+			players[1]->setTurn(false);
+		}
+		else if (players[1]->isTurn() && ballInsideHoleType == players[1]->getPlayerBallsType()) {
+			players[1]->decrementTotalBall();
+			players[1]->setTurn(true);
+			players[0]->setTurn(false);
+		}
+		else if (players[0]->isTurn() && balls[minIndex]->wasHit && ballInsideHoleType == "") {
+			cout << "Player 2 next" << endl;
+			players[1]->setTurn(true);
+			players[0]->setTurn(false);
+		}
+		else if (players[1]->isTurn() && balls[minIndex]->wasHit && ballInsideHoleType == "") {
+			cout << "Player 1 next" << endl;
+			players[1]->setTurn(false);
+			players[0]->setTurn(true);
+		}
+
+	}
+
+
+
+	//std::cout << std::boolalpha;
+	//Tableau de bord
+	cout << "Player1 balls: " << players[0]->getPlayerBallsType()
+		<< ", Turn: " << players[0]->isTurn()
+		<< ", Left: " << players[0]->getTotalBall()
+
+		<< " ---- Player2 balls: " << players[1]->getPlayerBallsType()
+		<< ", Turn: " << players[1]->isTurn()
+		<< ", Left: " << players[1]->getTotalBall() << endl;
+
+
+	return ballInsideHoleType;
 }
 
 void displayTable(Table& table, SDL_Renderer* renderer)
@@ -254,19 +343,19 @@ void displayBalls(Player* players[], int numberOfBalls, Ball* balls[], SDL_Rende
 		index = 1;
 	}
 	for (int i = 0; i < numberOfBalls; i++) {
-		if (i == BLANC) {
+		if (balls[i]->getType() == "blanc") {
 			Color color(255, 255, 255, SDL_ALPHA_OPAQUE);
 			balls[i]->draw(renderer, color, event, queue, queue[index]->getPropulsion());
 		}
-		if (i == NOIR) {
+		if (balls[i]->getType() == "noir") {
 			Color color(0, 0, 0, SDL_ALPHA_OPAQUE);
 			balls[i]->draw(renderer, color, event, queue, queue[index]->getPropulsion());
 		}
-		if (i == RAYEE1 || i == RAYEE2 || i == RAYEE3 || i == RAYEE4 || i == RAYEE5 || i == RAYEE6 || i == RAYEE7) {
+		if (balls[i]->getType() == "rayée") {
 			Color color(255, 0, 0, SDL_ALPHA_OPAQUE);
 			balls[i]->draw(renderer, color, event, queue, queue[index]->getPropulsion());
 		}
-		if (i == PLEINE1 || i == PLEINE2 || i == PLEINE3 || i == PLEINE4 || i == PLEINE5 || i == PLEINE6 || i == PLEINE7) {
+		if (balls[i]->getType() == "pleine") {
 			Color color(10, 100, 255, SDL_ALPHA_OPAQUE);
 			balls[i]->draw(renderer, color, event, queue, queue[index]->getPropulsion());
 		}
@@ -306,6 +395,10 @@ int main(int argc, char** argv) {
 	players[1] = new Player(queues[1]);
 	players[1]->setTurn(false);
 
+	bool playersDontHaveSpecificBallType = true;
+	bool ballHit = false;
+
+
 
 	bool endOfGame = false;
 	while (!endOfGame) {
@@ -315,11 +408,13 @@ int main(int argc, char** argv) {
 
 		displayTable(table, renderer);
 		displayBalls(players, numberOfBalls, balls, renderer, event, queues);
-		displayQueue(queues, renderer, queueColor, event);
+		displayQueue(queues, renderer, event);
 
-		visualizeBallPath(players, balls, queues, numberOfBalls, renderer);
+
+		int minIndex = visualizeBallPath(players, balls, queues, numberOfBalls, renderer, playersDontHaveSpecificBallType);
 		listenForBallCollision(numberOfBalls, balls);
-		removeBallInsideHole(players, numberOfBalls, balls, table);
+
+		string ballInsideHoleType = getAndRemoveBallInsideHole(players, numberOfBalls, balls, table, playersDontHaveSpecificBallType, minIndex);
 
 		showRenderingBuffer(renderer);
 		endOfGame = keypressed(event, '\033');

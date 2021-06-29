@@ -5,12 +5,18 @@ Player::Player(Queue* queue)
 	this->queue = queue;
 	this->ballType = "any";
 	this->turn = false;
-	this->fool = false;
+	this->foul = false;
+	this->totalBall = 7;
 }
 
 void Player::setPlayerBalls(string ballType)
 {
 	this->ballType = ballType;
+}
+
+string Player::getPlayerBallsType()
+{
+	return this->ballType;
 }
 
 void Player::setTurn(bool turn)
@@ -24,14 +30,34 @@ void Player::setTurn(bool turn)
 	}
 }
 
-void Player::setFool(bool fool)
+void Player::setFoul(bool foul)
 {
-	this->fool = fool;
+	this->foul = foul;
+}
+
+bool Player::isFoul()
+{
+	return this->foul;
+}
+
+void Player::decrementTotalBall()
+{
+	this->totalBall--;
+}
+
+int Player::getTotalBall()
+{
+	return this->totalBall;
 }
 
 void Player::setQueue(Queue* queue)
 {
 	this->queue = queue;
+}
+
+Queue* Player::getQueue()
+{
+	return this->queue;
 }
 
 void Player::makeQueueSatic()

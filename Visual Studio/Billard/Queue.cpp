@@ -15,7 +15,7 @@ __time64_t Queue::getTimeInNanoSeconds()
 }
 
 Queue::Queue(double mass, double turn, Point tip, Point handle, int width, int height)
-	: tip(tip), handle(handle), queueSpeed(0, 0), propulsion(0, 0), acceleration(0, 0), friction(0, 0)
+	: tip(tip), handle(handle), queueSpeed(0, 0), propulsion(0, 0), acceleration(0, 0), friction(0, 0), color(255,255,255, SDL_ALPHA_OPAQUE)
 {
 	this->mass = mass;
 	this->turn = turn;
@@ -57,6 +57,11 @@ void Queue::update(SDL_Event& event) {
 
 }
 
+void Queue::setColor(Color color)
+{
+	this->color = color;
+}
+
 void Queue::controllQueue(SDL_Event& event)
 {
 	if (!this->isStatic) {
@@ -89,6 +94,9 @@ void Queue::controllQueue(SDL_Event& event)
 		if (event.type == SDL_KEYUP) { //RELEASE KEY
 			this->setPropulsion(Vector(0, 0));
 		}
+	}
+	if (this->isStatic) {
+		this->setPropulsion(Vector(0, 0));
 	}
 }
 
@@ -153,12 +161,12 @@ Vector& Queue::getQueueSpeed()
 	return this->queueSpeed;
 }
 
-void Queue::drawQueue(SDL_Renderer* renderer, const Color& color)
+void Queue::drawQueue(SDL_Renderer* renderer)
 {
-	this->tip.draw(renderer, color, 5);
+	this->tip.draw(renderer, this->color, 5);
 	this->handle.x = this->tip.x + cos(this->turn * M_PI / 180) * 250;
 	this->handle.y = this->tip.y - sin(this->turn * M_PI / 180) * 250;
-	this->handle.draw(renderer, color, 10);
+	this->handle.draw(renderer, this->color, 10);
 
 	SDL_RenderDrawLine(renderer, this->tip.x, this->tip.y, this->handle.x, this->handle.y);
 	//SDL_RenderDrawLine(renderer, this->tip.x, this->tip.y, this->tip.x + cos(M_PI/2 + this->turn * M_PI/180) *250,
@@ -166,9 +174,9 @@ void Queue::drawQueue(SDL_Renderer* renderer, const Color& color)
 
 }
 
-void Queue::draw(SDL_Renderer* renderer, Color color, SDL_Event& event) {
+void Queue::draw(SDL_Renderer* renderer, SDL_Event& event) {
 
-	drawQueue(renderer, color);
+	drawQueue(renderer);
 	//visualizeVectors(renderer);
 
 	this->update(event);

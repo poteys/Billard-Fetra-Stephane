@@ -14,6 +14,7 @@ Ball::Ball(double mass, Point center, int radius, int width, int height)
 	this->height = height;
 	this->ballIsMoving = false;
 	this->lastUpdate = this->getTimeInNanoSeconds();
+	this->wasHit = false;
 }
 
 void Ball::update(SDL_Event& event, Queue* queue[], Vector queueSpeed)
@@ -114,6 +115,10 @@ void Ball::listenForQueueHit(Queue* queue[], Vector& queueSpeed)
 
 	if (this->isHitBy(queue[index]) && this->speed.x < 2 && this->speed.y < 2) {
 		this->setSpeed(queueSpeed); //Transfer speed to the ball
+		this->wasHit = true;
+	}
+	else if (this->getSpeed().x < 2 && this->getSpeed().y < 2) {
+		this->wasHit = false;
 	}
 }
 
@@ -138,8 +143,11 @@ void Ball::listenForBallCollision(Ball* ball, Vector& ballSpeed)
 		//v2primY = (ballSpeedyY+ thisSpeedY) / 2 //même sens que v1primY
 
 
-		Vector v2prim(this->getSpeed().x - (ball->getSpeed().x + this->getSpeed().x) / 2,
-			this->getSpeed().y - (ball->getSpeed().y + this->getSpeed().y) / 2);
+		double normeV1 = ballSpeed.magnitude();
+		double normeV2 = this->getSpeed().magnitude();
+
+		Vector v2prim(this->getSpeed().x - (ball->getSpeed().x  + this->getSpeed().x) / 2,
+			this->getSpeed().y - (ball->getSpeed().y    + this->getSpeed().y) / 2);
 
 
 		//Vector v2prim (this->getSpeed().x - sin(M_PI / 4) *	1/2 * ball->getSpeed().x,
@@ -149,8 +157,8 @@ void Ball::listenForBallCollision(Ball* ball, Vector& ballSpeed)
 		int signV2primX = sign(v2prim.x);
 		int signV2primY = sign(v2prim.y);
 
-		Vector v1prim(-signV2primX * ball->getSpeed().x - (ball->getSpeed().x + this->getSpeed().x) / 2,
-			signV2primY * ball->getSpeed().y - (ball->getSpeed().y + this->getSpeed().y) / 2);
+		Vector v1prim(-signV2primX * ball->getSpeed().x - (ball->getSpeed().x     + this->getSpeed().x) / 2,
+			signV2primY * ball->getSpeed().y - (ball->getSpeed().y      + this->getSpeed().y) / 2);
 
 
 		////Le sens de v1prim en X s'oppose toujours au sens de v2prim en X 
@@ -214,22 +222,13 @@ Vector& Ball::computeFriction()
 
 bool Ball::isHitBy(Queue* queue)
 {
-	int index = 0;
-
-	//if (queue[0]->isStaticQueue() == true) {
-	//	index = 1;
-	//}
-	//if (queue[1]->isStaticQueue() == true) {
-	//	index = 0;
-	//}
-
 	double distance = sqrt((queue->getQueueTip().x - this->center.x)
 		* (queue->getQueueTip().x - this->center.x) +
 		(queue->getQueueTip().y - this->center.y)
 		* (queue->getQueueTip().y - this->center.y));
 
 	//std::cout << distance << std::endl;
-	return distance <= this->radius + 1.0;
+	return distance <= this->radius;
 
 }
 
@@ -240,7 +239,7 @@ bool Ball::isHitBy(Ball* ball)
 		(ball->center.y - this->center.y)
 		* (ball->center.y - this->center.y));
 
-	return distance <= 2.0 * this->radius + 2;
+	return distance <= 2.0 * this->radius;
 }
 
 
