@@ -48,6 +48,11 @@ void Ball::update(SDL_Event& event, Queue* queue[], Vector queueSpeed)
 	listenForQueueHit(queue, queueSpeed);
 }
 
+void Ball::setPosition(Point position)
+{
+	this->center = position;
+}
+
 void Ball::setType(string ballType)
 {
 	this->type = ballType;
@@ -217,6 +222,10 @@ Vector& Ball::computeFriction()
 	this->friction.x = .2 * -this->getSpeed().x;
 	this->friction.y = .2 * -this->getSpeed().y;
 
+	/*if (abs(this->getSpeed().x) <= 0 || abs(this->getSpeed().y)<=0) {
+		this->setSpeed(Vector(0, 0));
+	}*/
+
 	return this->friction;
 }
 
@@ -281,7 +290,7 @@ void Ball::checkBordersAndDrawBall(SDL_Renderer* renderer, const Color& color)
 		this->speed.y *= -0.5;
 	}
 
-	//this->center.draw(renderer, color, 3);
+	this->center.draw(renderer, color, 3);
 	this->center.drawCircle(renderer, this->radius, color, true);
 }
 
@@ -295,6 +304,7 @@ void Ball::visualizeVectorSpeed(SDL_Renderer* renderer)
 
 void Ball::draw(SDL_Renderer* renderer, Color color, SDL_Event& event, Queue* queue[], Vector queueSpeed)
 {
+	this->center.update(event);
 	this->update(event, queue, queueSpeed);
 	checkBordersAndDrawBall(renderer, color);
 	//visualizeVectorSpeed(renderer);

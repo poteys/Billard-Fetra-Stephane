@@ -40,6 +40,8 @@ public:
 	Ball(double mass, Point center, int radius, int width, int height);
 	void update(SDL_Event& event, Queue* queue[], Vector queueSpeed);
 
+	void setPosition(Point position);
+
 	void setType(string ballType);
 	string getType();
 

@@ -17,7 +17,7 @@ public:
 	Player(Queue* queue);
 
 	void setPlayerBalls(string ballType);
-	string getPlayerBallsType();
+	string& getPlayerBallsType();
 
 	void setTurn(bool turn);
 
@@ -25,7 +25,7 @@ public:
 	bool isFoul();
 
 	void decrementTotalBall();
-	int getTotalBall();
+	int& getTotalBall();
 
 	void setQueue(Queue* queue);
 	Queue* getQueue();

@@ -14,7 +14,7 @@ void Player::setPlayerBalls(string ballType)
 	this->ballType = ballType;
 }
 
-string Player::getPlayerBallsType()
+string& Player::getPlayerBallsType()
 {
 	return this->ballType;
 }
@@ -45,7 +45,7 @@ void Player::decrementTotalBall()
 	this->totalBall--;
 }
 
-int Player::getTotalBall()
+int& Player::getTotalBall()
 {
 	return this->totalBall;
 }
